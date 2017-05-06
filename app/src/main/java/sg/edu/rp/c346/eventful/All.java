@@ -1,22 +1,31 @@
 package sg.edu.rp.c346.eventful;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link All.OnFragmentInteractionListener} interface
+ * {@link Home.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link All#newInstance} factory method to
+ * Use the {@link Home#newInstance} factory method to
  * create an instance of this fragment.
  */
 public class All extends Fragment {
@@ -28,9 +37,10 @@ public class All extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
-    private RecyclerView mEventList;
+    private RecyclerView mBlogList;
 
-    private OnFragmentInteractionListener mListener;
+    private Home.OnFragmentInteractionListener mListener;
+    private DatabaseReference mDatabase;
 
     public All() {
         // Required empty public constructor
@@ -67,16 +77,16 @@ public class All extends Fragment {
     public void onStart() {
         super.onStart();
 
-        FirebaseRecyclerAdapter<HealthSomething, BlogViewHolder> firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<HealthSomething, BlogViewHolder>(
+        FirebaseRecyclerAdapter<Events, BlogViewHolder> firebaseRecyclerAdapter = new FirebaseRecyclerAdapter<Events, BlogViewHolder>(
 
-                HealthSomething.class,
-                R.layout.new_row,
+                Events.class,
+                R.layout.row,
                 BlogViewHolder.class,
                 mDatabase
 
         ) {
             @Override
-            protected void populateViewHolder(BlogViewHolder viewHolder, HealthSomething model, int position) {
+            protected void populateViewHolder(BlogViewHolder viewHolder, Events model, int position) {
 
                 viewHolder.setTitle(model.getTitle());
                 viewHolder.setDesc(model.getDesc());
@@ -106,12 +116,22 @@ public class All extends Fragment {
             TextView post_desc = (TextView)mView.findViewById(R.id.desc_);
             post_desc.setText(desc);
         }
+    }
 
-        @Override
+
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_all, container, false);
+        View view = inflater.inflate(R.layout.fragment_all,
+                container, false);
+        mDatabase = FirebaseDatabase.getInstance().getReference().child("details");
+        mBlogList =(RecyclerView)view.findViewById(R.id.all_list);
+        mBlogList.setHasFixedSize(true);
+        mBlogList.setLayoutManager(new LinearLayoutManager(getActivity().getApplicationContext()));
+
+        return view;
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -125,7 +145,7 @@ public class All extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
         if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
+            mListener = (Home.OnFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
@@ -137,7 +157,6 @@ public class All extends Fragment {
         super.onDetach();
         mListener = null;
     }
-
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
